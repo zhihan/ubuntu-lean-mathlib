@@ -11,3 +11,9 @@ procedure.
 ```sh
 docker pull ghcr.io/zhihan/ubuntu-lean-mathlib:lean4.34.0-mathlib4.34.0-comparator-d03acab
 ```
+
+Immutable reference:
+
+```text
+ghcr.io/zhihan/ubuntu-lean-mathlib@sha256:a6b94becd79936d9c8ea6160e45f0ba937bf3c328886cbf82c2fe8b18fc90171
+```
