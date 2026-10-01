@@ -81,6 +81,10 @@ docker run --rm ubuntu-lean-mathlib:test sh -ec '
   cd /workspace
   lake env lean /tmp/Smoke.lean
   python3 -c "import pytest, pytest_json_ctrf"
+  # The package cache must be readable by, and owned by no, unprivileged user.
+  test "$(find /workspace/.lake/packages ! -type l ! -perm -0004 | wc -l)" -eq 0
+  test "$(find /workspace/.lake/packages ! -uid 0 | wc -l)" -eq 0
+  test "$(find /workspace/.lake/packages ! -type l -perm -0002 | wc -l)" -eq 0
 '
 ```
 
