@@ -25,7 +25,16 @@ WORKDIR /workspace
 RUN echo "leanprover/lean4:${LEAN_VERSION}" > lean-toolchain
 COPY lakefile.toml /workspace/lakefile.toml
 
-RUN lake update && lake exe cache get
+# Verifiers built on this image run submitted Lean code as an unprivileged
+# user, so that user must be able to read the package cache (lake reads its
+# build outputs and .trace files even when warm) but must not write it. The
+# cache download leaves most files root-only (0600) and some Batteries files
+# owned by uid 1001, which is the uid a later `useradd` receives. Fix both in
+# this same step: changing them in a later layer would store a second copy of
+# every file (about 7.6 GB). Root behaves exactly as before.
+RUN lake update && lake exe cache get \
+    && chown -R root:root /workspace/.lake/packages \
+    && chmod -R o+rX,o-w /workspace/.lake/packages
 
 ENV COMPARATOR_REV=d03acab154d269c06e60e4de7e4cc85deebff94b
 RUN git clone https://github.com/leanprover/comparator /tmp/comparator \
