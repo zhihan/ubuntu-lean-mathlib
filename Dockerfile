@@ -32,7 +32,14 @@ COPY lakefile.toml /workspace/lakefile.toml
 # owned by uid 1001, which is the uid a later `useradd` receives. Fix both in
 # this same step: changing them in a later layer would store a second copy of
 # every file (about 7.6 GB). Root behaves exactly as before.
+#
+# The download can also leave work for the first build, which an unprivileged
+# build cannot do: at this revision six .hash files lose their leading zero
+# (Lake rewrites them), ProofWidgets lacks widget/package-lock.json.hash (Lake
+# writes it), and modules the cache server lacks get compiled. Building
+# Mathlib once here, as root, does that work up front.
 RUN lake update && lake exe cache get \
+    && lake build +Mathlib \
     && chown -R root:root /workspace/.lake/packages \
     && chmod -R o+rX,o-w /workspace/.lake/packages
 

@@ -80,11 +80,15 @@ docker run --rm ubuntu-lean-mathlib:test sh -ec '
   printf "import Mathlib\n#check Nat\n" > /tmp/Smoke.lean
   cd /workspace
   lake env lean /tmp/Smoke.lean
-  python3 -c "import pytest, pytest_json_ctrf"
+  python3 -c "import pytest, ctrf"  # pytest-json-ctrf installs module ctrf
   # The package cache must be readable by, and owned by no, unprivileged user.
   test "$(find /workspace/.lake/packages ! -type l ! -perm -0004 | wc -l)" -eq 0
   test "$(find /workspace/.lake/packages ! -uid 0 | wc -l)" -eq 0
   test "$(find /workspace/.lake/packages ! -type l -perm -0002 | wc -l)" -eq 0
+  # Nor may it ever need to write the cache: every .hash is 16 hex digits and
+  # Mathlib is fully built. (Check the hashes first: lake rewrites them.)
+  test "$(find /workspace/.lake/packages -name "*.hash" ! -size 16c | wc -l)" -eq 0
+  lake build --no-build +Mathlib
 '
 ```
 
